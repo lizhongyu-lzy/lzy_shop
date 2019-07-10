@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lzy.shop.dao.ShopMapper">
+	<select id="getList" resultType="map">  
+		SELECT a.*,GROUP_CONCAT(c.tname) tname from t_shop a 
+		LEFT JOIN t_center b on a.sid = b.sid 
+		LEFT JOIN t_type c on b.tid = c.tid 
+		<where>
+			<if test="tid.length > 0  ">
+				b.sid in 
+				<foreach collection="tid" item="ti" open="(" separator="," close=")"></foreach>
+				ti
+				<!-- /* (SELECT sid from t_center where tid in (${tid}))	*/ -->
+			</if>
+			<if test="sname != '' ">
+			and sname like '%${sname}%'
+			</if>
+		</where>
+		
+		GROUP BY a.sid
+	
+	</select>
+	<select id="getType" resultType="type">
+		select * from t_type
+	</select>
+	<insert id="addShop">
+		<selectKey keyProperty="sid" order="AFTER" resultType="java.lang.Integer">
+			SELECT LAST_INSERT_ID()
+		</selectKey>
+		INSERT INTO `t_shop` (`sname`, `date`) VALUES (#{sname},#{date})
+	</insert>
+	<insert id="addCenter">
+		INSERT INTO `t_center` (`sid`, `tid`) VALUES (${sid}, ${tid})
+	</insert>
+	<select id="getShop" resultType="Shop">
+		select * from t_shop where sid = ${value}
+	</select>
+	<select id="getTypeCha" resultType="Type">
+		SELECT b.* FROM t_center a LEFT JOIN t_type b on a.tid = b.tid where a.sid =  ${value}
+	</select>
+	<delete id="delShop">
+		DELETE FROM `t_shop` WHERE sid in (${value})
+	</delete>
+	<delete id="delCenter">
+		DELETE FROM `t_center` WHERE sid in (${value})
+	</delete>
+</mapper>
